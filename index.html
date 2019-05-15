@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>doooodle</title>
+  <link href="https://fonts.googleapis.com/css?family=Pacifico" rel="stylesheet">
+  <style>
+  html, body {
+    margin: 0;
+    min-height: 100vh;
+  }
+  body {
+    padding: 0.5rem 4rem 4rem;
+    color: #40201E;
+    background-image: -webkit-gradient(linear, left top, right bottom, from(#FBDB89), to(#F48982));
+    background-image: -webkit-linear-gradient(left top, #FBDB89, #F48982);
+    background-image: -o-linear-gradient(left top, #FBDB89, #F48982);
+    background-image: linear-gradient(to right bottom, #FBDB89, #F48982);
+  }
+  header {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    width: 640px;
+    margin: 0 auto;
+  }
+  h1 {font-family: 'Pacifico', cursive;}
+  button {
+    padding: 10px 20px;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    border-radius: 1000px;
+    transition: all 0.3s;
+    outline: none;
+  }
+  button + button {
+    margin-left: 0.4rem;
+  }
+  button:hover {
+    box-shadow: 0 0.2rem 0.6rem 0.2rem rgba(43, 12, 1, 0.2);
+    opacity: 0.9;
+    transition: all 0.4s;
+  }
+  button.btn--delete {
+    background: #FA5141;
+  }
+  button.btn--download {
+    background: #02C490;
+  }
+  #draw {
+    display: block;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 0.3em;
+    box-shadow: 0 0.1rem 0.5rem 0.1rem rgba(43, 12, 1, 0.1);
+  }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>doooodle</h1>
+    <div class="btns">
+      <button class="btn--delete">Delete</button>
+      <button class="btn--download">Download</button>
+    </div>
+  </header>
+  <canvas id="draw" width="640" height="640"></canvas>
+  <a id="download_link"></a>
+
+  <script>
+    // Canvas
+    const canvas = document.querySelector('#draw');
+    const ctx = canvas.getContext('2d');
+    // canvas.width = window.innerWidth;
+    // canvas.height = window.innerHeight;
+    ctx.strokeStyle = '#BADA55';
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    // ctx.lineWidth = 100;
+    ctx.globalCompositeOperation = 'hue';
+    // ctx.fillStyle = "white";
+    // ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    let hue = 0;
+    let direction = true;
+
+    function draw(e) {
+      if (!isDrawing) return; // Stop the fn from running when they are not moused down.
+      console.log(e);
+      ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+      ctx.beginPath();
+      // Start from
+      ctx.moveTo(lastX, lastY);
+      // Go to
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      // lastX = e.offsetX;
+      // lastY = e.offsetY;
+      [lastX, lastY] = [e.offsetX, e.offsetY];
+
+      hue++;
+      if (hue > 360) {
+        hue = 0;
+      }
+
+      if (ctx.lineWidth >= 50 || ctx.lineWidth <= 1) {
+        direction = !direction;
+      }
+      if (direction) {
+        ctx.lineWidth++;
+      } else {
+        ctx.lineWidth--;
+      }
+
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDrawing = true;
+      [lastX, lastY] = [e.offsetX, e.offsetY];
+    });
+
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', () => isDrawing = false);
+    canvas.addEventListener('mouseout', () => isDrawing = false);
+
+
+    // Delete
+    document.querySelector('.btn--delete').addEventListener('click', deleteCanvas);
+    function deleteCanvas() {
+      location.reload();
+    }
+
+    // Save as Image
+    const downloadBtn = document.querySelector('.btn--download');
+    const downloadLink = document.querySelector('#download_link');
+    const locale = new Date().toLocaleString();
+    const filename = `doodle${locale}.png`;
+    downloadBtn.addEventListener('click', downloadImage);
+    function downloadImage() {
+      if (canvas.msToBlob) {
+        const blob = canvas.msToBlob();
+        window.navigator.msSaveBlob(blob, filename);
+      } else {
+          downloadLink.href = canvas.toDataURL('image/png');
+          downloadLink.download = filename;
+          downloadLink.click();
+      }
+    }
+  </script>
+</body>
+</html>
