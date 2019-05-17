@@ -12,7 +12,7 @@
     min-height: 100vh;
   }
   body {
-    padding: 0.5rem 4rem 4rem;
+    padding: 0.5rem 4rem 1rem;
     color: #40201E;
     background-image: -webkit-gradient(linear, left top, right bottom, from(#FBDB89), to(#F48982));
     background-image: -webkit-linear-gradient(left top, #FBDB89, #F48982);
@@ -29,7 +29,8 @@
     -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
-    width: 640px;
+    width: 90vw;
+    max-width: 640px;
     margin: 0 auto;
   }
   h1 {font-family: 'Pacifico', cursive;}
@@ -56,12 +57,41 @@
   button.btn--download {
     background: #02C490;
   }
-  #draw {
-    display: block;
+  .container {
+    width: 90vw;
+    max-width: 640px;
+    height: 90vw;
+    max-height: 640px;
     margin: 0 auto;
     background: #fff;
     border-radius: 0.3em;
     box-shadow: 0 0.1rem 0.5rem 0.1rem rgba(43, 12, 1, 0.1);
+    overflow: hidden;
+  }
+  #draw {
+    display: block;
+  }
+  p {
+    margin-top: 4rem;
+    text-align: center;
+  }
+
+  @media screen and (max-width:768px) {
+    body {
+      padding: 0.5rem 0 1rem;
+      overflow-x: hidden;
+    }
+    header {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    h1 {
+      width: 100%;
+      text-align: center;
+    }
+    .container {
+      margin-top: 2rem;
+    }
   }
   </style>
 </head>
@@ -74,23 +104,34 @@
       <button class="btn--download">Download</button>
     </div>
   </header>
-  <canvas id="draw" width="640" height="640"></canvas>
-  <a id="download_link"></a>
+  <main>
+    <div class="container">
+      <canvas id="draw" width="640" height="640"></canvas>
+    </div>
+    <a id="download_link"></a>
+  </main>
+  <footer>
+    <p><small>&copy; 2019 Gita</small></p>
+  </footer>
 
   <script>
     // Canvas
     const canvas = document.querySelector('#draw');
     const ctx = canvas.getContext('2d');
-    // canvas.width = window.innerWidth;
-    // canvas.height = window.innerHeight;
-    ctx.strokeStyle = '#BADA55';
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    // ctx.lineWidth = 100;
-    ctx.globalCompositeOperation = 'hue';
-    // ctx.fillStyle = "white";
-    // ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const container = document.querySelector('.container');
 
+    // Init and Resize
+    function init() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    init();
+    window.addEventListener('resize', init, false);
+
+    // Draw
     let isDrawing = false;
     let lastX = 0;
     let lastY = 0;
@@ -98,17 +139,16 @@
     let direction = true;
 
     function draw(e) {
-      if (!isDrawing) return; // Stop the fn from running when they are not moused down.
+      if (!isDrawing) return;
       console.log(e);
       ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.globalCompositeOperation = 'darken';
       ctx.beginPath();
-      // Start from
       ctx.moveTo(lastX, lastY);
-      // Go to
       ctx.lineTo(e.offsetX, e.offsetY);
       ctx.stroke();
-      // lastX = e.offsetX;
-      // lastY = e.offsetY;
       [lastX, lastY] = [e.offsetX, e.offsetY];
 
       hue++;
@@ -124,24 +164,27 @@
       } else {
         ctx.lineWidth--;
       }
-
     }
 
+    // Mouse event
     canvas.addEventListener('mousedown', (e) => {
       isDrawing = true;
       [lastX, lastY] = [e.offsetX, e.offsetY];
     });
-
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', () => isDrawing = false);
     canvas.addEventListener('mouseout', () => isDrawing = false);
 
+    // Touch event
+    canvas.addEventListener('touchstart', (e) => {
+      isDrawing = true;
+      [lastX, lastY] = [e.offsetX, e.offsetY];
+    });
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', () => isDrawing = false);
 
     // Delete
-    document.querySelector('.btn--delete').addEventListener('click', deleteCanvas);
-    function deleteCanvas() {
-      location.reload();
-    }
+    document.querySelector('.btn--delete').addEventListener('click', init);
 
     // Save as Image
     const downloadBtn = document.querySelector('.btn--download');
