@@ -134,18 +134,28 @@
     init();
 
     // Resize
-    let timeoutId;
-    function resizeBrowser() {
-      if (timeoutId) return ;
-      timeoutId = setTimeout( function () {
-        timeoutId = 0 ;
-        const confirmResize = window.confirm('If you resize the canvas, your drawing will be deleted. Are you sure you want to resize it?');
-        if (confirmResize) {
-          init();
-        }
-      }, 1000) ;
+    function isTouchDevice() {
+      let result = false;
+      if (window.ontouchstart === null) {
+        result = true;
+      }
+      return result;
     }
-    window.addEventListener('resize', resizeBrowser, false);
+
+    if (!isTouchDevice()) {
+      let timeoutId;
+      function resizeBrowser(e) {
+        if (timeoutId) return ;
+        timeoutId = setTimeout( function () {
+          timeoutId = 0 ;
+          const confirmResize = window.confirm('If you resize the canvas, your drawing will be deleted. Are you sure you want to resize it?');
+          if (confirmResize) {
+            init();
+          }
+        }, 1000) ;
+      }
+      window.addEventListener('resize', resizeBrowser, false);
+    }
 
     // Draw
     let isDrawing = false;
